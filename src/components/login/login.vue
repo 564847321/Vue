@@ -45,8 +45,8 @@ export default {
      
     // 登录请求
     async postform () {
-      const res = await this.$http.post('login', this.formdata)
-
+        const res = await this.$http.post('login', this.formdata)
+        
       console.log(res)
       const {
         meta: { msg, status },
