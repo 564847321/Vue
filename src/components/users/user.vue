@@ -88,9 +88,9 @@
         label="用户状态">
         <template slot-scope="scope">
           <el-switch
-              v-model="scope.row.mg_state"
-              
-              active-color="#13ce66"
+               v-model="scope.row.mg_state"
+               @change='switchchang(scope.row)'
+               active-color="#13ce66"
                inactive-color="#ff4949">
         </el-switch>
         </template>
@@ -100,8 +100,8 @@
        <el-table-column
         label="操作">
         <template slot-scope="scope" >
-          <el-button type="primary" size='mini' @click="showEditform(scope.row.id)" :plain='true' circle  icon="el-icon-edit"></el-button>
-          <el-button type="success" size='mini' :plain='true' circle icon="el-icon-share"></el-button>
+          <el-button type="primary" size='mini' @click="showEditform(scope.row)" :plain='true' circle  icon="el-icon-edit"></el-button>
+          <el-button type="success" size='mini' :plain='true'  @click='showBoxRgba(scope.row)' circle icon="el-icon-share"></el-button>
           <el-button type="danger" size='mini' :plain='true' @click='showMegBoxDele(scope.row.id)' circle icon="el-icon-delete"></el-button>
         </template> 
       </el-table-column>
@@ -111,6 +111,10 @@
     <!-- 编辑弹出页添加 -->
 <el-dialog title="修改用户" :visible.sync="dialogFormVisibleEdit">
      <el-form :model="add_form">
+              <el-form-item label="用户名" label-width="100px"  >
+                <el-input v-model="add_form.username" autocomplete="off" disabled></el-input>
+              </el-form-item>
+
                 <el-form-item label="邮箱" label-width="100px" >
                 <el-input v-model="add_form.email" autocomplete="off"></el-input>
               </el-form-item>
@@ -128,6 +132,33 @@
 
     <!-- 编辑弹出页添加结束 -->
 
+
+    <!-- 分配角色页面弹出开始 -->
+            <el-dialog title="分配角色" :visible.sync="dialogFormVisibleRgba">
+              <el-form :model="add_form">
+               <el-form-item label="用户名" label-width="100px"  >
+                  {{currUsername}}
+              </el-form-item> 
+                
+                <el-form-item label="角色"  label-width="100px" >
+                  <el-select  v-model="currRoleId">
+                    <el-option label="请选择" :value="-1"></el-option>
+
+                    <el-option        
+                    v-for="(v,i) in rgbalist " 
+                    :label="v.roleName"     
+                    :value="v.id"
+                    :key='i'
+                     ></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-form>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisibleRgba = false">取 消</el-button>
+                <el-button type="primary" @click="buttonshowBoxRgba">确 定</el-button>
+              </div>
+            </el-dialog> 
+    <!-- 分配角色页面弹出开始 -->
   </template>
 
     <!-- 分页开始 -->
@@ -163,6 +194,13 @@ export default {
       total: -1,
       dialogFormVisibleADD:false,
       dialogFormVisibleEdit:false,
+      dialogFormVisibleRgba:false,
+      currUsername:'',
+      currRoleId: -1,
+      rgbalist:[],
+      currUserId:'',
+
+
       form: [
         {
           password: "",
@@ -200,7 +238,7 @@ export default {
         meta: { msg, status },
         data: { total, users }
       } = res.data;
-      console.log(res.data);
+      // console.log(res.data);
       if (status === 200) {
         this.total = total;
         this.$message.success(msg);
@@ -214,7 +252,7 @@ export default {
 
     // 分页
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+      // console.log(`每页 ${val} 条`);
       this.pagesize = val
       // 重置页码pagenum
       this.pagenum = 1
@@ -222,7 +260,7 @@ export default {
 
     },
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+      // console.log(`当前页: ${val}`);
           this.pagenum = val
       // 重置页码pagenum
       // this.pagenum = 1
@@ -232,11 +270,12 @@ export default {
 
     // 添加弹出层
      showFormVisibleADD(){
+           this.add_form={};
            this.dialogFormVisibleADD=true
      },
      async submit_addform(){
       const res = await this.$http.post('users',this.add_form)
-             console.log(res)
+            //  console.log(res)
              this.dialogFormVisibleADD=false            
              const {
                       meta:{status, msg},
@@ -259,25 +298,27 @@ export default {
     // 添加弹出层结束
 
     // 编辑弹出层开始
-showEditform(id){
+showEditform(form){
       this.dialogFormVisibleEdit=true   
-      this.id=id
-      console.log(this.id)
+      this.add_form=form
+      this.getlist();
+
 },
      async  submit_Editform(){
             
-            console.log(this.id)
-             const res = await this.$http.put(`users/${this.id}&${this.add_form.email}&${this.add_form.email}`)     
+            // console.log(this.id)
+             const res = await this.$http.put(`users/${this.add_form.id}`,this.add_form)     
              const{
                       meta: { msg,status },
                       data
                   }=res.data
-                    console.log(res)
+                    // console.log(res)
 
                if(status==200){
                  this.$message.success(msg)
                  this.add_form=data
                  this.dialogFormVisibleEdit=false
+                 this.getlist();
                }
                else{
                     this.$message.warning(msg)
@@ -295,7 +336,7 @@ showEditform(id){
         .then(async () => {
           // 发送删除请求
           var res = await this.$http.delete(`users/${userId}`)
-          console.log(res)
+          // console.log(res)
              const{
                       meta: { msg,status },
                       data
@@ -317,7 +358,6 @@ showEditform(id){
     },
     // 删除结束
 
-
     // 搜索用户
       loadUserList() {
       this.getlist()
@@ -329,6 +369,44 @@ showEditform(id){
       this.pagenum = 1
       this.getlist()
     },
+
+    // 按钮状态改变事件
+   async switchchang(back){
+      var res = await this.$http.put(`users/${back.id}/state/${back.mg_state}`)     
+      const {
+                  meta: { msg,status },                  
+            }  =res.data 
+              if(status==200){
+                this.$message.success(msg)
+              }
+              else{
+                this.$message.warning(msg)
+              }
+       },
+    // 按钮状态改变事件结束
+    // 分配角色页面弹出开始
+
+         async showBoxRgba(back){
+           console.log(back)
+                this.currUserId = back.id
+                this.dialogFormVisibleRgba = true;
+                var res=await this.$http.get(`roles/?${back.id}`)
+                this.currUsername=back.username;                
+                // console.log(res)
+                const res2 = await this.$http.get(`users/${back.id}`)
+                this.currRoleId = res2.data.data.rid
+                this.rgbalist=res.data.data
+                console.log(this.rgbalist)
+                
+          },
+    // 分配角色页面弹出结束
+    // 提交分配角色开始
+
+        async buttonshowBoxRgba(){
+               const res = await this.$http.put(`users/${this.currUserId}/role`,{rid:this.currRoleId})
+               this.dialogFormVisibleRgba = false
+          },
+    // 提交分配角色结束
   }
 };
 </script>
