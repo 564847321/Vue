@@ -1,8 +1,37 @@
 <template>
 <el-card>
-    <my-bread level1="权限管理" level2="权限列表"></my-bread>
+    <my-bread level1="权限管理" level2="角色列表"></my-bread>
     <el-button class="add_btn">添加角色</el-button>
      
+     <el-table
+      :data="rightlist"
+      style="width: 100%"
+      >
+      <el-table-column type="expand"> </el-table-column>      
+      <el-table-column type="index" label="#" width="180" > </el-table-column>
+
+      <el-table-column
+        prop="roleName"
+        label="角色名称"
+        width="180"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="roleDesc"
+        label="角色描述">
+      </el-table-column>
+
+    
+       <el-table-column
+        label="操作">
+        <template slot-scope="scope" >
+          <el-button type="primary" size='mini'  @click="showEditform(scope.row)" :plain='true' circle  icon="el-icon-edit"></el-button>
+          <el-button type="success" size='mini' :plain='true'  @click='showBoxRgba(scope.row)' circle icon="el-icon-share"></el-button>
+          <el-button type="danger" size='mini' :plain='true' @click='showMegBoxDele(scope.row.id)' circle icon="el-icon-delete"></el-button>
+        </template> 
+      </el-table-column>
+    </el-table>
+
 </el-card>
 </template>
 
@@ -21,7 +50,7 @@ export default {
 
         methods:{
           async  getlist(){
-                const res = await this.$http.get(`rights/list`)
+                const res = await this.$http.get(`roles`)
                 console.log(res)
                 this.rightlist=res.data.data
             },
