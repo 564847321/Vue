@@ -5,6 +5,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import App from './App'
 import MyHttpServer from '@/plugins/http.js'
+import MyBread from '@/components/cuscom/myBread.vue'
 import moment from 'moment'
 
 
@@ -21,6 +22,9 @@ Vue.use(moment)
 
 Vue.config.productionTip = false
 
+Vue.component(MyBread.name, MyBread)
+
+
 // 全局过滤器  - 处理日期格式
 Vue.filter('fmtdate', (v) => {
   return moment(v).format('YYYY-MM-DD')
@@ -31,5 +35,5 @@ new Vue({
   el: '#app',
   router,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
 })
