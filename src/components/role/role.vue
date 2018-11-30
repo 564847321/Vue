@@ -23,7 +23,7 @@
                <el-col :span="20" >
                  <el-row  v-for="(item2,i) in item1.children" :key="i"  :span="14" >
                    <el-col :span="5">
-                     <el-tag type="warning" closable  @close="closeTag(scope.row)">{{item2.authName}}</el-tag>
+                     <el-tag type="warning" closable  @close="closeTag(scope.row,item2.id)">{{item2.authName}}</el-tag>
                      <i class="el-icon-arrow-right"></i>                     
                    </el-col>
                    <el-col :span="19">
@@ -109,12 +109,11 @@ export default {
                //  console.log(res.data.data[0].children )  
                //  console.log(res.data.data.children.children )                                                                    
             },
-           async closeTag(rolid){
+           async closeTag(rolid,rightid){
             //  console.log(rightId)
-             console.log(rolid)
-                 const res = await this.$http.delete(`roles/${rolid.id}/rights/${rolid.children.id}`)
-                 console.log(res)
-                //  rolid.children = res.data.data
+            //  console.log(rolid)
+                 const res = await this.$http.delete(`roles/${rolid.id}/rights/${rightid}`)
+                 rolid.children = res.data.data
             },
             // 编辑显示事件
           async  showEditform(role){
